@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #00B4D8;
+  --primary-dark: #0077B6;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-primary-50 text-primary-900 font-sans;
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+/* Custom utility classes */
+@layer components {
+  .btn-primary {
+    @apply bg-primary-700 text-white px-6 py-3 rounded-lg hover:bg-primary-800 transition-colors duration-200 font-medium;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-2 rounded-lg border border-primary-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg hover:scale-[1.02] duration-300;
+  }
+
+  .section-padding {
+    @apply py-12 md:py-16 lg:py-20;
+  }
+
+  .gradient-bg {
+    @apply bg-gradient-to-r from-primary-900 via-primary-700 to-primary-500;
+  }
+}
+
+/* DatePicker custom styles */
+.react-datepicker {
+  @apply font-sans border-primary-200 shadow-lg;
+}
+
+.react-datepicker__header {
+  @apply bg-primary-50 border-primary-200;
+}
+
+.react-datepicker__current-month {
+  @apply text-primary-900 font-semibold;
+}
+
+.react-datepicker__day {
+  @apply hover:bg-primary-100 rounded-full;
+}
+
+.react-datepicker__day--selected {
+  @apply bg-primary-600 text-white hover:bg-primary-700;
+}
+
+.react-datepicker__day--disabled {
+  @apply text-gray-300 hover:bg-transparent cursor-not-allowed;
+}
+
+.react-datepicker__navigation {
+  @apply top-3;
+}
+
+.react-datepicker__day-name {
+  @apply text-primary-600;
+}
+
+/* Phone Input custom styles */
+.PhoneInput {
+  @apply relative flex items-center;
+}
+
+.PhoneInputInput {
+  @apply w-full px-4 py-2 pl-16 rounded-lg border border-primary-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+}
+
+.PhoneInputCountry {
+  @apply absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2;
+}
+
+.PhoneInputCountryIcon {
+  @apply w-6 h-4 overflow-hidden rounded-sm;
+}
+
+.PhoneInputCountrySelect {
+  @apply absolute opacity-0 top-0 left-0 h-full cursor-pointer;
+}
+
+.PhoneInputCountrySelectArrow {
+  @apply border-primary-400;
+}
