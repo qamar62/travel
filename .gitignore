@@ -49,9 +49,10 @@ env/
 Thumbs.db
 
 # Django-specific files
-backend/db.sqlite3
+
 backend/local_settings.py
 backend/media
 backend/static
 backend/migrations
 __pycache__
+backend/db.sqlite3

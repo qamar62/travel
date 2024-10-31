@@ -20,8 +20,8 @@ class ActivityViewSet(viewsets.ModelViewSet):
     """
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializer
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
 class ActivityImageViewSet(viewsets.ModelViewSet):
     """

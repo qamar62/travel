@@ -3,14 +3,35 @@ import { Link } from 'react-router-dom';
 import { FiStar, FiClock } from 'react-icons/fi';
 import { Tour } from '../../types/tour';
 import LoadingSpinner from '../LoadingSpinner';
-import ErrorMessage from '../ErrorMessage';
 
 // Function to fetch tours data
 async function fetchTours() {
   try {
-    const response = await fetch('http://localhost:8000/api/v1/activities/');
+    // Obtain JWT token
+    const tokenResponse = await fetch('http://localhost:8000/api/v1/token/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: 'qam',
+        password: 'Teacher@62'
+      })
+    });
+
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access;
+    console.log(accessToken)
+
+    // Make API request with JWT token
+    const response = await fetch('http://localhost:8000/api/v1/activities/', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+
     const data = await response.json();
-    return data.results; // Returns the array of tour results
+    return data.results;
   } catch (error) {
     console.error('Error fetching tours:', error);
     throw error;
