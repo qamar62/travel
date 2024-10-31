@@ -1,8 +1,12 @@
-from django.urls import path
-from .views import TourViewSet
+from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from . import views
 
 router = DefaultRouter()
-router.register(r'', TourViewSet)
+router.register(r'', views.TourViewSet)
 
-urlpatterns = router.urls
+
+
+urlpatterns = [
+    path('', include(router.urls)),
+]

@@ -5,6 +5,12 @@ from django.conf.urls.static import static
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
+
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -29,8 +35,12 @@ urlpatterns = [
     
     # API Endpoints
     path('api/v1/tours/', include('tours.urls')),
+    path('api/v1/activities/', include('activity.urls')),
     path('api/v1/transfers/', include('transfers.urls')),
     path('api/v1/attractions/', include('attractions.urls')),
+    path('api/v1/token/verify', TokenVerifyView.as_view(), name='token_verify'),
+    path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
 if settings.DEBUG:

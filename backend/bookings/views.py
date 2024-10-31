@@ -29,3 +29,29 @@ class BookingViewSet(viewsets.ModelViewSet):
             {'error': 'booking cannot be cancelled'},
             status=status.HTTP_400_BAD_REQUEST
         )
+        
+        
+# 2 
+
+# class BookingViewSet(viewsets.ModelViewSet):
+#     serializer_class = BookingSerializer
+#     permission_classes = [IsAuthenticatedOrReadOnly]
+    
+#     def get_queryset(self):
+#         if self.request.user.is_staff:
+#             return Booking.objects.all()
+#         return Booking.objects.filter(user=self.request.user)
+    
+#     def perform_create(self, serializer):
+#         tour = serializer.validated_data['tour']
+#         tour_date = serializer.validated_data['tour_date']
+#         participants = serializer.validated_data['number_of_participants']
+        
+#         # Calculate total price based on base price, participants, and date modifier
+#         total_price = tour.base_price * participants * tour_date.price_modifier
+        
+#         serializer.save(
+#             user=self.request.user,
+#             total_price=total_price,
+#             status='pending'
+#         )

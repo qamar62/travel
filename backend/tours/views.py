@@ -1,29 +1,30 @@
 from rest_framework import viewsets, filters
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Tour, TourImage, TourDate
-from .serializers import TourSerializer, TourImageSerializer, TourDateSerializer
+from .models import Tour
+from .serializers import TourSerializer
 
 class TourViewSet(viewsets.ModelViewSet):
-    queryset = Tour.objects.all()
+    queryset = Tour.objects.filter(is_active=True)
     serializer_class = TourSerializer
-    permission_classes = [AllowAny]  # Allow unauthenticated access
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['location', 'price', 'duration']
-    search_fields = ['title', 'description', 'location']
-    ordering_fields = ['price', 'rating', 'created_at']
+    filterset_fields = ['destination', 'category', 'difficulty_level', 'duration_days']
+    search_fields = ['title', 'overview', 'destination__name', 'destination__country']
+    ordering_fields = ['base_price', 'duration_days', 'created_at']
 
     def get_queryset(self):
-        queryset = Tour.objects.prefetch_related('images', 'dates').all()
+        queryset = super().get_queryset()
         min_price = self.request.query_params.get('min_price', None)
         max_price = self.request.query_params.get('max_price', None)
-        date = self.request.query_params.get('date', None)
-
+        start_date = self.request.query_params.get('start_date', None)
+        
         if min_price:
-            queryset = queryset.filter(price__gte=min_price)
+            queryset = queryset.filter(base_price__gte=min_price)
         if max_price:
-            queryset = queryset.filter(price__lte=max_price)
-        if date:
-            queryset = queryset.filter(dates__date=date)
-
+            queryset = queryset.filter(base_price__lte=max_price)
+        if start_date:
+            queryset = queryset.filter(start_dates__start_date__gte=start_date)
+        
         return queryset
+

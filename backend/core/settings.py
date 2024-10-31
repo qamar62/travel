@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     'drf_yasg',
-    
+    'rest_framework_simplejwt',
     # Local apps
     'users.apps.UsersConfig',
     'tours.apps.ToursConfig',
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'transfers.apps.TransfersConfig',
     'attractions.apps.AttractionsConfig',
     'tickets.apps.TicketsConfig',
+    'activity',
 ]
 
 MIDDLEWARE = [

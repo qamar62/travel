@@ -8,7 +8,7 @@ import ErrorMessage from '../ErrorMessage';
 // Function to fetch tours data
 async function fetchTours() {
   try {
-    const response = await fetch('http://localhost:8000/api/v1/tours/');
+    const response = await fetch('http://localhost:8000/api/v1/activities/');
     const data = await response.json();
     return data.results; // Returns the array of tour results
   } catch (error) {

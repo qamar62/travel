@@ -487,7 +487,7 @@ export default function TourDetail() {
                     </div>
                   )}
                   <div className="text-3xl font-bold text-primary-900 mb-4">
-                    From €{tour.price}
+                    From {tour.price}د.إ
                     <span className="text-lg font-normal text-primary-600 ml-2">per person</span>
                   </div>
                 </div>

@@ -47,3 +47,11 @@ env/
 *.pem
 .DS_Store
 Thumbs.db
+
+# Django-specific files
+backend/db.sqlite3
+backend/local_settings.py
+backend/media
+backend/static
+backend/migrations
+__pycache__
