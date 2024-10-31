@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiStar, FiClock } from 'react-icons/fi';
 import { Tour } from '../../types/tour';
 import LoadingSpinner from '../LoadingSpinner';
+import ErrorMessage from '../ErrorMessage'; // Import ErrorMessage
 
 // Function to fetch tours data
 async function fetchTours() {
@@ -14,14 +15,13 @@ async function fetchTours() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        username: 'qam',
-        password: 'Teacher@62'
+        username: "qam",
+        password: "Teacher@62"
       })
     });
 
     const tokenData = await tokenResponse.json();
     const accessToken = tokenData.access;
-    console.log(accessToken)
 
     // Make API request with JWT token
     const response = await fetch('http://localhost:8000/api/v1/activities/', {
@@ -82,7 +82,7 @@ export default function PopularTours() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {validTours.map((tour) => (
-            <Link key={tour.id} to={`/tour/${tour.id}`} className="group">
+            <Link key={tour.id} to={`/activity/${tour.id}`} className="group">
               <div className="card">
                 <img 
                   src={tour.images[0]?.image || '/placeholder-tour.jpg'} 
@@ -93,7 +93,7 @@ export default function PopularTours() {
                   <h3 className="text-xl font-semibold mb-2 text-primary-900">{tour.title}</h3>
                   <div className="flex items-center mb-2">
                     <FiStar className="text-yellow-400 mr-1" />
-                    <span className="text-primary-700">{tour.rating}</span>
+                    <span className="text-primary-700">{tour.available_days}</span>
                     <span className="text-primary-500 ml-1">({tour.reviews_count} reviews)</span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -101,7 +101,7 @@ export default function PopularTours() {
                       <FiClock className="mr-1" />
                       <span>{tour.duration} min</span>
                     </div>
-                    <span className="text-xl font-bold text-primary-700">€{tour.price}</span>
+                    <span className="text-xl font-bold text-primary-700">€{tour.base_price}</span>
                   </div>
                 </div>
               </div>

@@ -5,9 +5,11 @@ import { seoConfig } from '../utils/seoConfig';
 
 const categories = [
   { id: 'all', name: 'All' },
+  { id: 'Activities', name: 'Activities' },
   { id: 'tours', name: 'Tours' },
   { id: 'attractions', name: 'Attractions' },
   { id: 'transfers', name: 'Transfers' }
+  
 ];
 
 const filters = {

@@ -1,3 +1,5 @@
+import { addDays } from 'date-fns'; // Import addDays from date-fns
+
 // Simulate unavailable dates (for testing purposes)
 const unavailableDates = [
   '2024-01-15',
@@ -49,4 +51,24 @@ export function checkDateAvailability(date: Date): AvailabilityStatus {
     spotsLeft: 15, // Maximum group size
     message: 'Available'
   };
+}
+
+// New function to get available dates based on time slots
+export function getAvailableDates(timeSlots: any[]): Date[] {
+  const today = new Date();
+  const availableDates: Date[] = [];
+
+  timeSlots.forEach(slot => {
+    const { available_days } = slot;
+    const startDate = new Date(today);
+    const endDate = addDays(new Date(today), 90); // Check availability for the next 90 days
+
+    for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
+      if (available_days.includes(d.getDay())) {
+        availableDates.push(new Date(d));
+      }
+    }
+  });
+
+  return availableDates;
 }

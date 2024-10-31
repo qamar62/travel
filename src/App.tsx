@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import TourDetail from './pages/TourDetail';
+import ActivityDetail from './pages/ActivityDetail'; // Import ActivityDetail
 import CartPage from './pages/CartPage';
 import SearchResults from './pages/SearchResults';
 import CheckoutPage from './pages/CheckoutPage';
@@ -37,6 +38,7 @@ function PageWrapper() {
             <Route path="/" element={<HomePage />} />
             <Route path="/things-to-do" element={<ThingsToDo />} />
             <Route path="/tour/:id" element={<TourDetail />} />
+            <Route path="/activity/:id" element={<ActivityDetail />} /> {/* Add route for ActivityDetail */}
             <Route path="/cart" element={<CartPage />} />
             <Route path="/search-results" element={<SearchResults />} />
             <Route path="/checkout" element={<CheckoutPage />} />

@@ -7,10 +7,11 @@ export interface Tour {
   id: string;
   title: string;
   description: string;
-  price: number;
+  base_price: number;
   duration: string;
   location: string;
   rating: number;
+  available_days: number;
   reviews_count: number;
   images: TourImage[];
   max_group_size: number;

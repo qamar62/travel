@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import sitemap from 'vite-plugin-sitemap';
 
-// URLs for sitemap
+// URLs for sitemap with dynamic patterns
 const urls = [
   '/',
   '/about',
@@ -12,9 +12,12 @@ const urls = [
   '/terms',
   '/privacy',
   '/blog',
-  '/tour/1',
-  '/tour/2',
-  '/tour/3'
+  '/tour/1', // Example static tour ID
+  '/tour/2', // Example static tour ID
+  '/tour/3', // Example static tour ID
+  '/activity/1', // Example static activity ID
+  '/activity/2', // Example static activity ID
+  '/activity/3'  // Example static activity ID
 ];
 
 export default defineConfig({

@@ -9,10 +9,11 @@ import TourGallery from '../components/TourGallery';
 import LoadingSpinner from '../components/LoadingSpinner';
 import SEO from '../components/SEO';
 import { seoConfig } from '../utils/seoConfig';
-import { checkDateAvailability } from '../utils/availability'; // Ensure this function is imported
+import { checkDateAvailability, getAvailableDates } from '../utils/availability'; // Import getAvailableDates
+import { tourItinerary } from '../data/tourData'; // Import tourItinerary
 
-// Define the Tour type
-interface Tour {
+// Define the Activity type
+interface Activity {
   id: number;
   images: { id: number; image: string; is_primary: boolean; alt_text: string; order: number; }[];
   time_slots: { id: number; start_time: string; end_time: string; available_days: number[]; seasonal_dates: null | string; price_modifier: string; available_capacity: number; }[];
@@ -76,59 +77,42 @@ const ADDONS = [
   }
 ];
 
-// Function to fetch tours data
-async function fetchTours() {
+// Function to fetch activity data
+async function fetchActivity(id: string) {
   try {
-    // Obtain JWT token
-    const tokenResponse = await fetch('http://localhost:8000/api/v1/token/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: "qam",
-        password: "Teacher@62"
-      })
-    });
-
-    const tokenData = await tokenResponse.json();
-    const accessToken = tokenData.access;
-
-    // Make API request with JWT token
-    const response = await fetch('http://localhost:8000/api/v1/activities/${id}/', {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
-      }
-    });
-
+    const response = await fetch(`http://localhost:8000/api/v1/activities/${id}/`);
     const data = await response.json();
-    return data.results;
+    return data;
   } catch (error) {
-    console.error('Error fetching tours:', error);
+    console.error('Error fetching activity:', error);
     throw error;
   }
 }
 
-export default function TourDetail() {
+export default function ActivityDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [tour, setTour] = useState<Tour | null>(null);
+  const [activity, setActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [availableDates, setAvailableDates] = useState<Date[]>([]); // State for available dates
   
   useEffect(() => {
-    const loadTour = async () => {
+    const loadActivity = async () => {
       try {
-        const toursData = await fetchTours();
-        const selectedTour = toursData.find((t: Tour) => t.id === parseInt(id)) || null;
-        setTour(selectedTour);
+        const activityData = await fetchActivity(id!);
+        setActivity(activityData);
+        
+        // Get available dates from time slots
+        const dates = getAvailableDates(activityData.time_slots);
+        setAvailableDates(dates);
       } catch (error) {
-        setError('Failed to load tour details. Please try again later.');
+        setError('Failed to load activity details. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
-    loadTour();
+    loadActivity();
   }, [id]);
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -163,10 +147,10 @@ export default function TourDetail() {
   }, [availability, totalParticipants]);
 
   const total = useMemo(() => {
-    if (!tour) return 0;
+    if (!activity) return 0;
     
-    let total = parseFloat(tour.base_price) * participants.adults;
-    total += parseFloat(tour.child_price) * participants.children; // Child price for children
+    let total = parseFloat(activity.base_price) * participants.adults;
+    total += parseFloat(activity.child_price) * participants.children; // Child price for children
     
     selectedAddons.forEach(addonId => {
       const addon = ADDONS.find(a => a.id === addonId);
@@ -180,18 +164,18 @@ export default function TourDetail() {
     }
 
     return total;
-  }, [tour, participants, selectedAddons, discount]);
+  }, [activity, participants, selectedAddons, discount]);
 
   if (loading) {
     return <LoadingSpinner />;
   }
 
-  if (error || !tour) {
+  if (error || !activity) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-2">Error</h2>
-          <p className="text-gray-600">{error || 'Tour not found'}</p>
+          <p className="text-gray-600">{error || 'Activity not found'}</p>
           <button
             onClick={() => navigate('/')}
             className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
@@ -236,9 +220,9 @@ export default function TourDetail() {
     navigate('/cart', {
       state: {
         newItem: {
-          type: 'tour',
-          title: tour.title,
-          image: tour.images[0]?.image || '',
+          type: 'activity',
+          title: activity.title,
+          image: activity.images[0]?.image || '',
           date: selectedDate.toISOString(),
           price: total,
           quantity: 1,
@@ -268,7 +252,7 @@ export default function TourDetail() {
             selected={selectedDate}
             onChange={handleDateChange}
             minDate={new Date()}
-            maxDate={addDays(new Date(), 90)}
+            filterDate={(date) => availableDates.some(d => d.toDateString() === date.toDateString())} // Filter available dates
             placeholderText="Select a date"
             dateFormat="MMMM d, yyyy"
             className="input-field pl-10 w-full cursor-pointer"
@@ -464,18 +448,18 @@ export default function TourDetail() {
           <div className="mb-6">
             <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
               <FiMapPin className="text-primary-500" />
-              <span>{selectedTour?.location_name}</span>
+              <span>{activity?.location_name}</span>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-3">{selectedTour?.title}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-3">{activity?.title}</h1>
             <div className="flex items-center space-x-4">
               <div className="flex items-center">
                 <FiStar className="text-yellow-400 mr-1" />
-                <span className="font-semibold">{selectedTour?.average_rating || 'N/A'}</span>
-                <span className="text-gray-500 ml-1">({selectedTour?.reviews_count} reviews)</span>
+                <span className="font-semibold">{activity?.average_rating || 'N/A'}</span>
+                <span className="text-gray-500 ml-1">({activity?.reviews_count} reviews)</span>
               </div>
               <div className="flex items-center text-gray-600">
                 <FiClock className="mr-1" />
-                <span>{selectedTour?.duration}</span>
+                <span>{activity?.duration}</span>
               </div>
             </div>
           </div>
@@ -483,48 +467,48 @@ export default function TourDetail() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
               {/* Gallery */}
-              <TourGallery images={selectedTour?.images.map(img => img.image) || []} />
+              <TourGallery images={activity?.images.map(img => img.image) || []} />
 
               {/* Quick Info */}
               <div className="bg-primary-50 p-6 rounded-lg">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <div className="text-primary-700 font-semibold">Duration</div>
-                    <div className="text-primary-900">{selectedTour?.duration}</div>
+                    <div className="text-primary-900">{activity?.duration}</div>
                   </div>
                   <div>
                     <div className="text-primary-700 font-semibold">Start time</div>
-                    <div className="text-primary-900">{selectedTour?.time_slots[0]?.start_time || 'Flexible'}</div>
+                    <div className="text-primary-900">{activity?.time_slots[0]?.start_time || 'Flexible'}</div>
                   </div>
                   <div>
                     <div className="text-primary-700 font-semibold">Languages</div>
-                    <div className="text-primary-900">{selectedTour?.languages.join(', ') || 'English'}</div>
+                    <div className="text-primary-900">{activity?.languages.join(', ') || 'English'}</div>
                   </div>
                   <div>
                     <div className="text-primary-700 font-semibold">Group size</div>
-                    <div className="text-primary-900">Max {selectedTour?.max_participants || 'N/A'} people</div>
+                    <div className="text-primary-900">Max {activity?.max_participants || 'N/A'} people</div>
                   </div>
                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <h2 className="text-2xl font-bold mb-4 text-primary-900">About this tour</h2>
-                <p className="text-primary-800 leading-relaxed">{selectedTour?.description}</p>
+                <h2 className="text-2xl font-bold mb-4 text-primary-900">About this activity</h2>
+                <p className="text-primary-800 leading-relaxed">{activity?.description}</p>
               </div>
 
               {/* Itinerary */}
               <div>
-                <h2 className="text-2xl font-bold mb-6 text-primary-900">Tour Itinerary</h2>
+                <h2 className="text-2xl font-bold mb-6 text-primary-900">Activity Itinerary</h2>
                 <TimelineItinerary items={tourItinerary} />
               </div>
 
               {/* Highlights */}
-              {selectedTour?.highlights && selectedTour.highlights.length > 0 && (
+              {activity?.highlights && activity.highlights.length > 0 && (
                 <div>
                   <h2 className="text-2xl font-bold mb-4 text-primary-900">Highlights</h2>
                   <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {selectedTour.highlights.map((highlight, index) => (
+                    {activity.highlights.map((highlight, index) => (
                       <li key={index} className="flex items-start space-x-2">
                         <FiCheck className="text-primary-600 mt-1 flex-shrink-0" />
                         <span className="text-primary-800">{highlight}</span>
@@ -536,11 +520,11 @@ export default function TourDetail() {
 
               {/* Included/Not Included */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {selectedTour?.included && selectedTour.included.length > 0 && (
+                {activity?.included && activity.included.length > 0 && (
                   <div>
                     <h2 className="text-xl font-bold mb-4 text-primary-900">Included</h2>
                     <ul className="space-y-3">
-                      {selectedTour.included.map((item, index) => (
+                      {activity.included.map((item, index) => (
                         <li key={index} className="flex items-start space-x-2">
                           <FiCheck className="text-green-500 mt-1 flex-shrink-0" />
                           <span className="text-primary-800">{item}</span>
@@ -549,11 +533,11 @@ export default function TourDetail() {
                     </ul>
                   </div>
                 )}
-                {selectedTour?.not_included && selectedTour.not_included.length > 0 && (
+                {activity?.not_included && activity.not_included.length > 0 && (
                   <div>
                     <h2 className="text-xl font-bold mb-4 text-primary-900">Not Included</h2>
                     <ul className="space-y-3">
-                      {selectedTour.not_included.map((item, index) => (
+                      {activity.not_included.map((item, index) => (
                         <li key={index} className="flex items-start space-x-2">
                           <FiX className="text-red-500 mt-1 flex-shrink-0" />
                           <span className="text-primary-800">{item}</span>
@@ -576,7 +560,7 @@ export default function TourDetail() {
                     </div>
                   )}
                   <div className="text-3xl font-bold text-primary-900 mb-4">
-                    From {selectedTour?.base_price}د.إ
+                    From {activity?.base_price}د.إ
                     <span className="text-lg font-normal text-primary-600 ml-2">per person</span>
                   </div>
                 </div>
@@ -597,7 +581,7 @@ export default function TourDetail() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-xl font-bold text-primary-900">
-                From €{selectedTour?.base_price}
+                From €{activity?.base_price}
                 <span className="text-sm font-normal text-primary-600 ml-1">per person</span>
               </div>
               {discount > 0 && (
@@ -619,7 +603,7 @@ export default function TourDetail() {
         <div className={`fixed inset-0 bg-white z-50 lg:hidden transform transition-transform duration-300 ${isBookingOpen ? 'translate-y-0' : 'translate-y-full'}`}>
           <div className="h-full flex flex-col">
             <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-xl font-bold">Book Your Tour</h2>
+              <h2 className="text-xl font-bold">Book Your Activity</h2>
               <button
                 onClick={() => setIsBookingOpen(false)}
                 className="p-2 hover:bg-gray-100 rounded-full"
