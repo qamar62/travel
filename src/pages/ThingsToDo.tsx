@@ -35,14 +35,13 @@ interface Activity {
   id: number;
   title: string;
   slug: string;
-  category: number;
-  category_name: string;
+  activity_type: string;
   destination: number;
   duration_minutes: number;
   difficulty_level: string;
   overview: string;
   highlights: string;
-  meeting_point: string;
+  location_name: string;
   base_price: string;
   min_group_size: number;
   max_group_size: number;
@@ -153,6 +152,20 @@ export default function ThingsToDo() {
     return primaryImage ? primaryImage.image : 'https://via.placeholder.com/800';
   };
 
+  const getBadgeText = (item: ListItem) => {
+    if ('category_name' in item) {
+      return item.category_name;
+    }
+    return item.activity_type;
+  };
+
+  const getLocationText = (item: ListItem) => {
+    if ('meeting_point' in item) {
+      return item.meeting_point;
+    }
+    return item.location_name;
+  };
+
   const renderItems = () => {
     let items: ListItem[] = [];
     
@@ -165,7 +178,7 @@ export default function ThingsToDo() {
     }
 
     return items.map((item) => (
-      <div key={`${item.id}-${item.category_name}`} className="bg-white rounded-lg shadow-md overflow-hidden group">
+      <div key={`${item.id}-${getBadgeText(item)}`} className="bg-white rounded-lg shadow-md overflow-hidden group">
         <div className="relative">
           <img
             src={getPrimaryImage(item.images)}
@@ -174,7 +187,7 @@ export default function ThingsToDo() {
           />
           <div className="absolute top-4 left-4">
             <span className="bg-white/90 backdrop-blur-sm text-primary-600 px-3 py-1 rounded-full text-sm font-medium">
-              {item.category_name}
+              {getBadgeText(item)}
             </span>
           </div>
         </div>
@@ -182,7 +195,7 @@ export default function ThingsToDo() {
           <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
           <div className="flex items-center text-sm text-gray-600 mb-2">
             <FiMapPin className="mr-1" />
-            <span>{item.meeting_point}</span>
+            <span>{getLocationText(item)}</span>
           </div>
           <div className="flex items-center text-sm text-gray-600 mb-2">
             <FiClock className="mr-1" />
