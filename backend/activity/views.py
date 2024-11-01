@@ -57,7 +57,7 @@ class TimeSlotViewSet(viewsets.ModelViewSet):
     queryset = TimeSlot.objects.all()
     serializer_class = TimeSlotSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['activity', 'date', 'is_available']
+    filterset_fields = ['activity']
     ordering_fields = ['date', 'start_time']
     ordering = ['date', 'start_time']
 

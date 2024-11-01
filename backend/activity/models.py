@@ -91,6 +91,10 @@ class Activity(models.Model):
     class Meta:
         verbose_name_plural = "Activities"
         ordering = ['-featured', '-created_at']
+        
+    def __str__(self):
+        return self.title
+    
 
 class ActivityImage(models.Model):
     activity = models.ForeignKey(Activity, related_name='images', on_delete=models.CASCADE)

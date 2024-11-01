@@ -53,6 +53,6 @@ Thumbs.db
 backend/local_settings.py
 backend/media
 backend/static
-backend/migrations
+migrations
 __pycache__
 backend/db.sqlite3

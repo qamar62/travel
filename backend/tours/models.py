@@ -1,6 +1,7 @@
 # models.py
 from django.db import models
 from django.contrib.auth.models import User
+from activity.models import Activity
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Destination(models.Model):
@@ -42,7 +43,7 @@ class Tour(models.Model):
         default=1  # Add a default value
     )
     difficulty_level = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES)
-    
+    activities = models.ManyToManyField(Activity, related_name="tours")
     # Tour Details
     overview = models.TextField()
     highlights = models.TextField()

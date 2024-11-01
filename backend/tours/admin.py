@@ -75,6 +75,13 @@ class TourAdmin(admin.ModelAdmin):
             ),
             'classes': ('wide',)
         }),
+        ('Activity Includes', {
+            'fields': (
+                'activities',
+               
+            ),
+            'classes': ('wide',)
+        }),
         ('Pricing & Group Size', {
             'fields': (
                 'base_price',

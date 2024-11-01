@@ -1,9 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from . import views
+from . views import TourViewSet
 
 router = DefaultRouter()
-router.register(r'', views.TourViewSet)
+router.register(r'', TourViewSet)
 
 
 
