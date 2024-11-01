@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from .models import Tour, Destination, TourImage, TourDate
 
-
 from rest_framework.validators import UniqueValidator
+from activity.serializers import ActivitySerializer
 
 from .models import (
     Destination,
@@ -64,7 +64,8 @@ class TourSerializer(serializers.ModelSerializer):
     inclusions = TourInclusionSerializer(many=True, read_only=True)
     exclusions = TourExclusionSerializer(many=True, read_only=True)
     category_name = serializers.SerializerMethodField()
-
+    activities = ActivitySerializer(many=True, read_only=True)
+   
     class Meta:
         model = Tour
         fields = (
@@ -89,10 +90,12 @@ class TourSerializer(serializers.ModelSerializer):
             'start_dates',
             'inclusions',
             'exclusions',
+            'activities',
             'created_at',
             'updated_at',
             'is_active',
         )
+        extra_fields = ['activities']
 
     def get_category_name(self, obj):
         return obj.category.name
