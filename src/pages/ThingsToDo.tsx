@@ -1,23 +1,70 @@
 import { useState, useEffect } from 'react';
-import { FiFilter, FiStar, FiClock, FiMapPin } from 'react-icons/fi';
+import { FiFilter, FiStar, FiClock, FiMapPin, FiUsers } from 'react-icons/fi';
 import SEO from '../components/SEO';
 import { seoConfig } from '../utils/seoConfig';
 
+interface TourImage {
+  id: number;
+  image: string;
+  is_primary: boolean;
+  caption: string;
+  tour: number;
+}
+
+interface Tour {
+  id: number;
+  title: string;
+  slug: string;
+  category: number;
+  category_name: string;
+  destination: number;
+  duration_days: number;
+  difficulty_level: string;
+  overview: string;
+  highlights: string;
+  itinerary: string;
+  meeting_point: string;
+  end_point: string;
+  base_price: string;
+  min_group_size: number;
+  max_group_size: number;
+  images: TourImage[];
+}
+
+interface Activity {
+  id: number;
+  title: string;
+  slug: string;
+  category: number;
+  category_name: string;
+  destination: number;
+  duration_minutes: number;
+  difficulty_level: string;
+  overview: string;
+  highlights: string;
+  meeting_point: string;
+  base_price: string;
+  min_group_size: number;
+  max_group_size: number;
+  images: TourImage[];
+}
+
+type ListItem = Tour | Activity;
+
 const categories = [
   { id: 'all', name: 'All' },
-  { id: 'Activities', name: 'Activities' },
+  { id: 'activities', name: 'Activities' },
   { id: 'tours', name: 'Tours' },
   { id: 'attractions', name: 'Attractions' },
   { id: 'transfers', name: 'Transfers' }
-  
 ];
 
 const filters = {
   priceRange: [
     { id: 'any', name: 'Any Price' },
-    { id: 'under-50', name: 'Under €50' },
-    { id: '50-100', name: '€50 - €100' },
-    { id: 'over-100', name: 'Over €100' }
+    { id: 'under-50', name: 'Under AED 50' },
+    { id: '50-100', name: 'AED 50 - 100' },
+    { id: 'over-100', name: 'Over AED 100' }
   ],
   duration: [
     { id: 'any', name: 'Any Duration' },
@@ -40,14 +87,128 @@ export default function ThingsToDo() {
     rating: 'any'
   });
   const [showFilters, setShowFilters] = useState(false);
-  const [tours, setTours] = useState([]);
+  const [tours, setTours] = useState<Tour[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/v1/tours/')
-      .then((response) => response.json())
-      .then((data) => setTours(data.results))
-      .catch((error) => console.error('Error fetching tours:', error));
-  }, []);
+    // Construct filter query params
+    const getFilterParams = () => {
+      const params = new URLSearchParams();
+      
+      if (selectedFilters.priceRange !== 'any') {
+        switch (selectedFilters.priceRange) {
+          case 'under-50':
+            params.append('base_price_lte', '50');
+            break;
+          case '50-100':
+            params.append('base_price_gte', '50');
+            params.append('base_price_lte', '100');
+            break;
+          case 'over-100':
+            params.append('base_price_gte', '100');
+            break;
+        }
+      }
+
+      if (selectedFilters.duration !== 'any') {
+        switch (selectedFilters.duration) {
+          case 'under-3':
+            params.append('duration_lte', '180');
+            break;
+          case '3-6':
+            params.append('duration_gte', '180');
+            params.append('duration_lte', '360');
+            break;
+          case 'over-6':
+            params.append('duration_gte', '360');
+            break;
+        }
+      }
+
+      return params.toString();
+    };
+
+    // Fetch data based on selected category and filters
+    const fetchData = async () => {
+      const filterParams = getFilterParams();
+      
+      if (selectedCategory === 'all' || selectedCategory === 'tours') {
+        const toursResponse = await fetch(`http://localhost:8000/api/v1/tours/?${filterParams}`);
+        const toursData = await toursResponse.json();
+        setTours(toursData.results);
+      }
+
+      if (selectedCategory === 'all' || selectedCategory === 'activities') {
+        const activitiesResponse = await fetch(`http://localhost:8000/api/v1/activities/?${filterParams}`);
+        const activitiesData = await activitiesResponse.json();
+        setActivities(activitiesData.results);
+      }
+    };
+
+    fetchData();
+  }, [selectedCategory, selectedFilters]);
+
+  const getPrimaryImage = (images: TourImage[]) => {
+    const primaryImage = images.find(img => img.is_primary);
+    return primaryImage ? primaryImage.image : 'https://via.placeholder.com/800';
+  };
+
+  const renderItems = () => {
+    let items: ListItem[] = [];
+    
+    if (selectedCategory === 'all' || selectedCategory === 'tours') {
+      items = [...items, ...tours];
+    }
+    
+    if (selectedCategory === 'all' || selectedCategory === 'activities') {
+      items = [...items, ...activities];
+    }
+
+    return items.map((item) => (
+      <div key={`${item.id}-${item.category_name}`} className="bg-white rounded-lg shadow-md overflow-hidden group">
+        <div className="relative">
+          <img
+            src={getPrimaryImage(item.images)}
+            alt={item.title}
+            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          <div className="absolute top-4 left-4">
+            <span className="bg-white/90 backdrop-blur-sm text-primary-600 px-3 py-1 rounded-full text-sm font-medium">
+              {item.category_name}
+            </span>
+          </div>
+        </div>
+        <div className="p-4">
+          <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
+          <div className="flex items-center text-sm text-gray-600 mb-2">
+            <FiMapPin className="mr-1" />
+            <span>{item.meeting_point}</span>
+          </div>
+          <div className="flex items-center text-sm text-gray-600 mb-2">
+            <FiClock className="mr-1" />
+            <span>
+              {'duration_days' in item 
+                ? `${item.duration_days} days`
+                : `${Math.round(item.duration_minutes / 60)} hours`}
+            </span>
+          </div>
+          <div className="flex items-center text-sm text-gray-600 mb-3">
+            <FiUsers className="mr-1" />
+            <span>Min. {item.min_group_size} persons</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-2xl font-bold text-primary-600">AED {item.base_price}</span>
+              <span className="text-gray-500 text-sm ml-1">per person</span>
+            </div>
+            <button className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+              Book Now
+            </button>
+          </div>
+        </div>
+      </div>
+    ));
+  };
 
   return (
     <>
@@ -138,45 +299,7 @@ export default function ThingsToDo() {
 
           {/* Results Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {tours.map((tour) => (
-              <div key={tour.id} className="bg-white rounded-lg shadow-md overflow-hidden group">
-                <div className="relative">
-                  <img
-                    src={tour.images[0] || 'https://via.placeholder.com/800'} // Placeholder if no images
-                    alt={tour.title}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-white/90 backdrop-blur-sm text-primary-600 px-3 py-1 rounded-full text-sm font-medium">
-                      Tour
-                    </span>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold mb-2">{tour.title}</h3>
-                  <div className="flex items-center text-sm text-gray-600 mb-2">
-                    <FiMapPin className="mr-1" />
-                    <span>{tour.location}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600 mb-3">
-                    <FiClock className="mr-1" />
-                    <span>{tour.duration} minutes</span>
-                    <span className="mx-2">•</span>
-                    <FiStar className="text-yellow-400" />
-                    <span className="ml-1">{tour.rating} ({tour.reviews_count})</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-2xl font-bold text-primary-600">€{tour.price}</span>
-                      <span className="text-gray-500 text-sm ml-1">per person</span>
-                    </div>
-                    <button className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
-                      Book Now
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+            {renderItems()}
           </div>
         </div>
       </div>
