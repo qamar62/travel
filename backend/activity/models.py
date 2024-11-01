@@ -48,6 +48,9 @@ class Activity(models.Model):
     requirements = models.JSONField(default=list)
     accessibility_info = models.TextField(blank=True)
     
+    # New itinerary field
+    itinerary = models.JSONField(default=list, help_text="List of itinerary items")
+    
     # Timing and Duration
     duration = models.DurationField(help_text="Duration in hours and minutes")
     skip_the_line = models.BooleanField(default=False)
@@ -72,6 +75,9 @@ class Activity(models.Model):
     featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Addons 
+    addons = models.JSONField(default=list, help_text="List of addons items", null=True, blank=True)
     
     # SEO and Display
     meta_title = models.CharField(max_length=200, blank=True)

@@ -38,7 +38,7 @@ function PageWrapper() {
             <Route path="/" element={<HomePage />} />
             <Route path="/things-to-do" element={<ThingsToDo />} />
             <Route path="/tour/:id" element={<TourDetail />} />
-            <Route path="/activity/:id" element={<ActivityDetail />} /> {/* Add route for ActivityDetail */}
+            <Route path="/activity/:id" element={<ActivityDetail />} /> {/* Update route for ActivityDetail */}
             <Route path="/cart" element={<CartPage />} />
             <Route path="/search-results" element={<SearchResults />} />
             <Route path="/checkout" element={<CheckoutPage />} />

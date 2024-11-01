@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from .models import *
 
-
-
 class ActivityImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ActivityImage
@@ -38,11 +36,13 @@ class ActivitySerializer(serializers.ModelSerializer):
     time_slots = TimeSlotSerializer(many=True, read_only=True)
     average_rating = serializers.SerializerMethodField()
     reviews_count = serializers.SerializerMethodField()
+    itinerary = serializers.JSONField()  # Include itinerary field
+    addons = serializers.JSONField()  # Include addons field
 
     class Meta:
         model = Activity
         fields = '__all__'
-        extra_fields = ['images', 'time_slots', 'average_rating', 'reviews_count']
+        extra_fields = ['images', 'time_slots', 'average_rating', 'reviews_count', 'itinerary', 'addons']
 
     def get_average_rating(self, obj):
         return obj.reviews.aggregate(avg=models.Avg('rating'))['avg']

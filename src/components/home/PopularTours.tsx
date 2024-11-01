@@ -31,6 +31,7 @@ async function fetchTours() {
     });
 
     const data = await response.json();
+    console.log(data.results); // Log fetched tours and their slugs
     return data.results;
   } catch (error) {
     console.error('Error fetching tours:', error);
@@ -99,7 +100,7 @@ export default function PopularTours() {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center text-primary-600">
                       <FiClock className="mr-1" />
-                      <span>{tour.duration} min</span>
+                      <span>{tour.duration?.slice(0, 5)} H</span>
                     </div>
                     <span className="text-xl font-bold text-primary-700">€{tour.base_price}</span>
                   </div>

@@ -4,8 +4,7 @@ import { IconType } from 'react-icons';
 interface TimelineItem {
   time: string;
   title: string;
-  description: string;
-  icon: IconType;
+  detail: string; // Change description to detail
 }
 
 interface TimelineItineraryProps {
@@ -18,7 +17,6 @@ export default function TimelineItinerary({ items }: TimelineItineraryProps) {
       <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-primary-200"></div>
       <div className="space-y-8">
         {items.map((item, index) => {
-          const Icon = item.icon;
           return (
             <div key={index} className="relative flex items-start gap-6">
               <div className="absolute left-8 top-8 w-3 h-3 -ml-1.5 bg-primary-600 rounded-full border-2 border-white"></div>
@@ -28,12 +26,11 @@ export default function TimelineItinerary({ items }: TimelineItineraryProps) {
               </div>
               <div className="flex-1 bg-white rounded-lg shadow-sm p-6 ml-8 hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-3 mb-2">
-                  <Icon className="w-5 h-5 text-primary-600" />
                   <h3 className="text-lg font-semibold text-primary-900">
                     {item.title}
                   </h3>
                 </div>
-                <p className="text-primary-600">{item.description}</p>
+                <p className="text-primary-600">{item.detail}</p> {/* Change description to detail */}
               </div>
             </div>
           );

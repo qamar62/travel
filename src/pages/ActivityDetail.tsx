@@ -10,7 +10,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import SEO from '../components/SEO';
 import { seoConfig } from '../utils/seoConfig';
 import { checkDateAvailability, getAvailableDates } from '../utils/availability'; // Import getAvailableDates
-import { tourItinerary } from '../data/tourData'; // Import tourItinerary
+import Addon from '../components/Addon'; // Import Addon component
 
 // Define the Activity type
 interface Activity {
@@ -51,36 +51,14 @@ interface Activity {
   updated_at: string;
   meta_title: string;
   meta_description: string;
+  itinerary: { time: string; title: string; detail: string; }[]; // Update itinerary field
+  addons: { icon: string; price: number; short_detail: string; title: string; }[]; // Update addons field
 }
-
-const ADDONS = [
-  {
-    id: 'photo',
-    name: 'Professional Photo Package',
-    price: 25,
-    description: 'Get professional photos of your desert adventure',
-    icon: '📸'
-  },
-  {
-    id: 'private-guide',
-    name: 'Private Guide Upgrade',
-    price: 35,
-    description: 'Exclusive guide for your group',
-    icon: '👤'
-  },
-  {
-    id: 'dinner',
-    name: 'Premium Dinner Upgrade',
-    price: 45,
-    description: 'Enhance your experience with a premium dining option',
-    icon: '🍽️'
-  }
-];
 
 // Function to fetch activity data
 async function fetchActivity(id: string) {
   try {
-    const response = await fetch(`http://localhost:8000/api/v1/activities/${id}/`);
+    const response = await fetch(`http://localhost:8000/api/v1/activities/${id}/`); // Use ID for fetching
     const data = await response.json();
     return data;
   } catch (error) {
@@ -90,17 +68,18 @@ async function fetchActivity(id: string) {
 }
 
 export default function ActivityDetail() {
-  const { id } = useParams();
+  const { id } = useParams(); // Get ID from URL
   const navigate = useNavigate();
   const [activity, setActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [availableDates, setAvailableDates] = useState<Date[]>([]); // State for available dates
+  const [selectedAddonQuantities, setSelectedAddonQuantities] = useState<{ [key: string]: number }>({}); // State for addon quantities
   
   useEffect(() => {
     const loadActivity = async () => {
       try {
-        const activityData = await fetchActivity(id!);
+        const activityData = await fetchActivity(id!); // Fetch activity using ID
         setActivity(activityData);
         
         // Get available dates from time slots
@@ -118,7 +97,6 @@ export default function ActivityDetail() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [pickupLocation, setPickupLocation] = useState('');
-  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const [participants, setParticipants] = useState({
     adults: 1,
     children: 0,
@@ -152,10 +130,11 @@ export default function ActivityDetail() {
     let total = parseFloat(activity.base_price) * participants.adults;
     total += parseFloat(activity.child_price) * participants.children; // Child price for children
     
-    selectedAddons.forEach(addonId => {
-      const addon = ADDONS.find(a => a.id === addonId);
+    // Calculate total for selected addons
+    Object.keys(selectedAddonQuantities).forEach(addonId => {
+      const addon = activity.addons.find(a => a.title === addonId);
       if (addon) {
-        total += addon.price;
+        total += addon.price * selectedAddonQuantities[addonId];
       }
     });
 
@@ -164,7 +143,7 @@ export default function ActivityDetail() {
     }
 
     return total;
-  }, [activity, participants, selectedAddons, discount]);
+  }, [activity, participants, selectedAddonQuantities, discount]);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -204,18 +183,24 @@ export default function ActivityDetail() {
     }
   };
 
-  const handleAddonToggle = (addonId: string) => {
-    setSelectedAddons(prev => 
-      prev.includes(addonId) 
-        ? prev.filter(id => id !== addonId)
-        : [...prev, addonId]
-    );
+  const handleAddonQuantityChange = (title: string, quantity: number) => {
+    setSelectedAddonQuantities(prev => ({
+      ...prev,
+      [title]: quantity
+    }));
   };
 
   const handleBooking = () => {
     if (!selectedDate || !isDateAvailable || !pickupLocation) {
       return;
     }
+
+    const addonsToCart = Object.keys(selectedAddonQuantities)
+      .filter(key => selectedAddonQuantities[key] > 0)
+      .map(key => ({
+        title: key,
+        quantity: selectedAddonQuantities[key]
+      }));
 
     navigate('/cart', {
       state: {
@@ -227,13 +212,11 @@ export default function ActivityDetail() {
           price: total,
           quantity: 1,
           details: {
-            adults: participants.adults,
-            children: participants.children,
-            infants: participants.infants,
+            adults: participants.adults.toString(),
+            children: participants.children.toString(),
+            infants: participants.infants.toString(),
             pickup: pickupLocation,
-            addons: selectedAddons.length > 0 
-              ? selectedAddons.map(id => ADDONS.find(a => a.id === id)?.name).join(', ')
-              : 'None'
+            addons: addonsToCart
           }
         }
       }
@@ -368,35 +351,15 @@ export default function ActivityDetail() {
           Optional Add-ons
         </label>
         <div className="space-y-2">
-          {ADDONS.map(addon => (
-            <div
-              key={addon.id}
-              className={`group relative flex items-start p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                selectedAddons.includes(addon.id)
-                  ? 'border-primary-500 bg-primary-50'
-                  : 'border-gray-200 hover:border-primary-200'
-              }`}
-              onClick={() => handleAddonToggle(addon.id)}
-            >
-              <input
-                type="checkbox"
-                checked={selectedAddons.includes(addon.id)}
-                onChange={() => handleAddonToggle(addon.id)}
-                className="mt-1 text-primary-600 focus:ring-primary-500"
-              />
-              <div className="ml-3 flex-1">
-                <div className="flex items-center">
-                  <span className="text-xl mr-2">{addon.icon}</span>
-                  <div>
-                    <h3 className="font-medium text-gray-900">{addon.name}</h3>
-                    <p className="text-sm text-gray-500">{addon.description}</p>
-                  </div>
-                </div>
-                <div className="mt-1 text-primary-600 font-medium">
-                  €{addon.price}
-                </div>
-              </div>
-            </div>
+          {activity?.addons.map((addon, index) => (
+            <Addon 
+              key={index}
+              icon={addon.icon}
+              title={addon.title}
+              short_detail={addon.short_detail}
+              price={addon.price}
+              onQuantityChange={(quantity) => handleAddonQuantityChange(addon.title, quantity)} // Pass quantity change handler
+            />
           ))}
         </div>
       </div>
@@ -500,7 +463,7 @@ export default function ActivityDetail() {
               {/* Itinerary */}
               <div>
                 <h2 className="text-2xl font-bold mb-6 text-primary-900">Activity Itinerary</h2>
-                <TimelineItinerary items={tourItinerary} />
+                <TimelineItinerary items={activity?.itinerary} /> {/* Use TimelineItinerary component */}
               </div>
 
               {/* Highlights */}

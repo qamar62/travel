@@ -5,6 +5,7 @@ export interface TourImage {
 
 export interface Tour {
   id: string;
+  slug:string;
   title: string;
   description: string;
   base_price: number;
